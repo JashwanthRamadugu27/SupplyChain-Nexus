@@ -58,10 +58,9 @@ print(
 # 4. OPTIMIZATION WEIGHTS
 # ============================================================
 #
-# These weights define the objective.
-#
 # Higher weight = more importance.
 #
+# These weights define the recovery decision objective.
 # They can be changed later depending on the business scenario.
 # ============================================================
 
@@ -127,6 +126,9 @@ recovery["co2_score"] = (
 
 # ============================================================
 # 7. CREATE OPTIMIZATION SCORE
+# ============================================================
+#
+# Higher score = more desirable recovery option.
 # ============================================================
 
 recovery["optimization_score"] = (
@@ -218,7 +220,10 @@ for _, group_info in groups.iterrows():
     # Objective
     # --------------------------------------------------------
     #
-    # Minimize weighted recovery cost.
+    # Maximize weighted recovery score.
+    #
+    # Higher optimization score means a more desirable
+    # recovery option according to the defined weights.
     # --------------------------------------------------------
 
     objective = solver.Objective()
@@ -229,7 +234,7 @@ for _, group_info in groups.iterrows():
 
         objective.SetCoefficient(
             variables[index],
-            -row["optimization_score"]
+            row["optimization_score"]
         )
 
     objective.SetMaximization()
@@ -243,10 +248,12 @@ for _, group_info in groups.iterrows():
 
 
     if status != pywraplp.Solver.OPTIMAL:
+
         print(
             f"Optimization failed for "
             f"{disrupted_hub} -> {customer}"
         )
+
         continue
 
 
